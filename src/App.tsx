@@ -1,10 +1,29 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Administration from "./pages/Administration";
+import Utilisateurs from "./pages/Utilisateurs";
+import Services from "./pages/Services";
+import GEC from "./pages/GEC";
+import GECReception from "./pages/GECReception";
+import GECEnvoi from "./pages/GECEnvoi";
+import GECNouveau from "./pages/GECNouveau";
+import CourrierEntrant from "./pages/CourrierEntrant";
+import CourrierSortant from "./pages/CourrierSortant";
+import CourrierInterne from "./pages/CourrierInterne";
+import GED from "./pages/GED";
+import GEDArborescence from "./pages/GEDArborescence";
+import GEDExploration from "./pages/GEDExploration";
+import GEDGestion from "./pages/GEDGestion";
+import SAE from "./pages/SAE";
+import SAEPlan from "./pages/SAEPlan";
+import SAEVersement from "./pages/SAEVersement";
+import SAERecherche from "./pages/SAERecherche";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -15,8 +34,26 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/administration" element={<Administration />} />
+          <Route path="/administration/utilisateurs" element={<Utilisateurs />} />
+          <Route path="/administration/services" element={<Services />} />
+          <Route path="/gec" element={<GEC />} />
+          <Route path="/gec/reception" element={<GECReception />} />
+          <Route path="/gec/envoi" element={<GECEnvoi />} />
+          <Route path="/gec/nouveau" element={<GECNouveau />} />
+          <Route path="/gec/nouveau/entrant" element={<CourrierEntrant />} />
+          <Route path="/gec/nouveau/sortant" element={<CourrierSortant />} />
+          <Route path="/gec/nouveau/interne" element={<CourrierInterne />} />
+          <Route path="/ged" element={<GED />} />
+          <Route path="/ged/arborescence" element={<GEDArborescence />} />
+          <Route path="/ged/exploration" element={<GEDExploration />} />
+          <Route path="/ged/gestion" element={<GEDGestion />} />
+          <Route path="/sae" element={<SAE />} />
+          <Route path="/sae/plan" element={<SAEPlan />} />
+          <Route path="/sae/versement" element={<SAEVersement />} />
+          <Route path="/sae/recherche" element={<SAERecherche />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
