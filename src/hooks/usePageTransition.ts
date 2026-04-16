@@ -1,18 +1,25 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 export function usePageTransition() {
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const triggerLoading = useCallback(() => {
+  const navigateTo = useCallback((path: string) => {
     setLoading(true);
-  }, []);
+    setTimeout(() => {
+      navigate(path);
+      setLoading(false);
+    }, 500);
+  }, [navigate]);
 
-  useEffect(() => {
-    if (loading) {
-      const timer = setTimeout(() => setLoading(false), 600);
-      return () => clearTimeout(timer);
-    }
-  }, [loading]);
+  const goBack = useCallback(() => {
+    setLoading(true);
+    setTimeout(() => {
+      navigate(-1);
+      setLoading(false);
+    }, 500);
+  }, [navigate]);
 
-  return { loading, triggerLoading };
+  return { loading, navigateTo, goBack };
 }
