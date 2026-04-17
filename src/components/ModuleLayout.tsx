@@ -29,10 +29,9 @@ const ModuleLayout = ({ title, sidebarItems, children }: ModuleLayoutProps) => {
     <>
       <LoadingScreen show={loading} />
       <div className="min-h-screen flex bg-muted">
-        {/* Sidebar */}
         <aside className="w-60 bg-sidebar text-sidebar-foreground flex flex-col shrink-0">
           <div className="p-4 border-b border-sidebar-border flex items-center gap-3">
-            <img src={logoCuy} alt="CUY" className="w-7 h-7 object-contain" />
+            <img src={logoCuy} alt="CUY" className="w-10 h-10 object-contain" />
             <span className="font-bold text-xs">{title}</span>
           </div>
           <nav className="flex-1 p-2.5 space-y-0.5">
@@ -61,7 +60,6 @@ const ModuleLayout = ({ title, sidebarItems, children }: ModuleLayoutProps) => {
           </div>
         </aside>
 
-        {/* Main content */}
         <div className="flex-1 flex flex-col min-h-screen">
           <header className="bg-card border-b border-border px-5 py-3 flex items-center gap-2.5">
             <Button variant="ghost" size="icon" className="w-8 h-8" onClick={goBack}>
