@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,14 +15,13 @@ import GECNouveau from "./pages/GECNouveau";
 import CourrierEntrant from "./pages/CourrierEntrant";
 import CourrierSortant from "./pages/CourrierSortant";
 import CourrierInterne from "./pages/CourrierInterne";
+import CourrierDetail from "./pages/CourrierDetail";
 import GED from "./pages/GED";
 import GEDArborescence from "./pages/GEDArborescence";
 import GEDExploration from "./pages/GEDExploration";
 import GEDGestion from "./pages/GEDGestion";
+import GEDVisualisation from "./pages/GEDVisualisation";
 import SAE from "./pages/SAE";
-import SAEPlan from "./pages/SAEPlan";
-import SAEVersement from "./pages/SAEVersement";
-import SAERecherche from "./pages/SAERecherche";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,14 +45,13 @@ const App = () => (
           <Route path="/gec/nouveau/entrant" element={<CourrierEntrant />} />
           <Route path="/gec/nouveau/sortant" element={<CourrierSortant />} />
           <Route path="/gec/nouveau/interne" element={<CourrierInterne />} />
+          <Route path="/gec/courrier/:id" element={<CourrierDetail />} />
           <Route path="/ged" element={<GED />} />
           <Route path="/ged/arborescence" element={<GEDArborescence />} />
           <Route path="/ged/exploration" element={<GEDExploration />} />
           <Route path="/ged/gestion" element={<GEDGestion />} />
+          <Route path="/ged/visualisation" element={<GEDVisualisation />} />
           <Route path="/sae" element={<SAE />} />
-          <Route path="/sae/plan" element={<SAEPlan />} />
-          <Route path="/sae/versement" element={<SAEVersement />} />
-          <Route path="/sae/recherche" element={<SAERecherche />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

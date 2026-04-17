@@ -6,50 +6,14 @@ import LoadingScreen from "@/components/LoadingScreen";
 import { usePageTransition } from "@/hooks/usePageTransition";
 
 const modules = [
-  {
-    id: "administration",
-    title: "Administration",
-    description: "Gérez les utilisateurs, les rôles et les services de l'organisation. Configurez les accès et les permissions.",
-    icon: Shield,
-    color: "bg-primary",
-    stats: [
-      { label: "Utilisateurs", value: "124", icon: Users },
-      { label: "Services", value: "18", icon: BarChart3 },
-    ],
-  },
-  {
-    id: "gec",
-    title: "Gestion Électronique du Courrier",
-    description: "Suivez les courriers entrants, sortants et internes. Enregistrez et tracez chaque correspondance.",
-    icon: Mail,
-    color: "bg-destructive",
-    stats: [
-      { label: "Courriers reçus", value: "2 340", icon: FileText },
-      { label: "En attente", value: "47", icon: BarChart3 },
-    ],
-  },
-  {
-    id: "ged",
-    title: "Gestion Électronique des Documents",
-    description: "Organisez, indexez et explorez les documents institutionnels. Gérez l'arborescence documentaire.",
-    icon: FolderOpen,
-    color: "bg-secondary",
-    stats: [
-      { label: "Documents", value: "8 712", icon: Database },
-      { label: "Dossiers", value: "346", icon: FolderOpen },
-    ],
-  },
-  {
-    id: "sae",
-    title: "Système d'Archivage Électronique",
-    description: "Archivez les documents à valeur probante. Consultez le plan de classement et effectuez des versements.",
-    icon: Archive,
-    color: "bg-primary",
-    stats: [
-      { label: "Archives", value: "3 891", icon: Database },
-      { label: "Versements", value: "62", icon: FileText },
-    ],
-  },
+  { id: "administration", title: "Administration", description: "Gérez les utilisateurs, les rôles et les services de l'organisation. Configurez les accès et les permissions.", icon: Shield, color: "bg-primary",
+    stats: [{ label: "Utilisateurs", value: "124", icon: Users }, { label: "Services", value: "18", icon: BarChart3 }] },
+  { id: "gec", title: "Gestion Électronique du Courrier", description: "Suivez les courriers entrants, sortants et internes. Enregistrez et tracez chaque correspondance.", icon: Mail, color: "bg-destructive",
+    stats: [{ label: "Courriers reçus", value: "2 340", icon: FileText }, { label: "En attente", value: "47", icon: BarChart3 }] },
+  { id: "ged", title: "Gestion Électronique des Documents", description: "Organisez, indexez et explorez les documents institutionnels. Gérez l'arborescence documentaire.", icon: FolderOpen, color: "bg-secondary",
+    stats: [{ label: "Documents", value: "8 712", icon: Database }, { label: "Dossiers", value: "346", icon: FolderOpen }] },
+  { id: "sae", title: "Système d'Archivage Électronique", description: "Archivez les documents à valeur probante. Consultez les archives scellées avec leur empreinte.", icon: Archive, color: "bg-primary",
+    stats: [{ label: "Archives", value: "3 891", icon: Database }, { label: "Versements", value: "62", icon: FileText }] },
 ];
 
 const Dashboard = () => {
@@ -64,11 +28,10 @@ const Dashboard = () => {
     <>
       <LoadingScreen show={loading} />
       <div className="min-h-screen bg-muted">
-        {/* Header */}
         <header className="bg-card border-b border-border">
-          <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
+          <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <img src={logoCuy} alt="CUY" className="w-9 h-9 object-contain" />
+              <img src={logoCuy} alt="CUY" className="w-14 h-14 object-contain" />
               <div>
                 <h1 className="text-sm font-bold text-foreground leading-tight">Communauté Urbaine de Yaoundé</h1>
                 <p className="text-[11px] text-muted-foreground">Plateforme de gestion intégrée</p>
@@ -80,7 +43,6 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Content */}
         <main className="max-w-6xl mx-auto px-6 py-10">
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
             <h2 className="text-xl font-bold text-foreground">Tableau de bord</h2>
@@ -89,11 +51,7 @@ const Dashboard = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {modules.map((mod, i) => (
-              <motion.div
-                key={mod.id}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.08 }}
+              <motion.div key={mod.id} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
                 onClick={() => navigateTo(`/${mod.id}`)}
                 className="cursor-pointer group bg-card rounded-xl border border-border overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 hover:-translate-y-0.5"
               >
