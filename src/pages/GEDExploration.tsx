@@ -1,44 +1,90 @@
-import { Search, FileText, File } from "lucide-react";
+import { useState } from "react";
+import { Search, Folder, ChevronRight, FileText, File, ArrowLeft, Home } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useAppStore, FolderNode } from "@/lib/store";
 
-const sidebarItems = [
-  { id: "explore", label: "Exploration", icon: Search, path: "/ged/exploration" },
-];
-
-const allDocs = [
-  { nom: "Rapport Q1 2026.pdf", type: "PDF", dossier: "Rapports/Q1", date: "2026-03-30" },
-  { nom: "Note de service 042.docx", type: "DOCX", dossier: "Notes de service", date: "2026-04-10" },
-  { nom: "Courrier entrant 001.pdf", type: "PDF", dossier: "Courriers 2026/Entrants", date: "2026-04-14" },
-  { nom: "Budget prévisionnel.xlsx", type: "XLSX", dossier: "Rapports", date: "2026-02-15" },
-];
+const sidebarItems = [{ id: "explore", label: "Exploration", icon: Search, path: "/ged/exploration" }];
 
 const GEDExploration = () => {
+  const { folders, documents } = useAppStore();
+  const [currentFolderId, setCurrentFolderId] = useState<number | null>(null);
   const [search, setSearch] = useState("");
-  const filtered = allDocs.filter(d => d.nom.toLowerCase().includes(search.toLowerCase()));
+
+  const currentFolder = folders.find((f) => f.id === currentFolderId);
+  const subfolders = folders.filter((f) => f.parentId === currentFolderId);
+  const filesInFolder = documents.filter((d) => d.folderId === currentFolderId && d.actif && !d.scelle);
+
+  // Build breadcrumb
+  const breadcrumb: FolderNode[] = [];
+  let cursor: FolderNode | undefined = currentFolder;
+  while (cursor) {
+    breadcrumb.unshift(cursor);
+    cursor = folders.find((f) => f.id === cursor!.parentId);
+  }
+
+  const filtered = search
+    ? {
+        folders: subfolders.filter((f) => f.nom.toLowerCase().includes(search.toLowerCase())),
+        files: filesInFolder.filter((d) => d.nom.toLowerCase().includes(search.toLowerCase())),
+      }
+    : { folders: subfolders, files: filesInFolder };
 
   return (
     <ModuleLayout title="Exploration" sidebarItems={sidebarItems} backPath="/ged">
-      <div className="space-y-6">
+      <div className="space-y-5">
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un document..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
+          <Input placeholder="Rechercher dans ce dossier..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
         </div>
 
-        <div className="grid gap-3">
-          {filtered.map((doc, i) => (
-            <div key={i} className="bg-card rounded-xl border border-border p-4 shadow-card flex items-center gap-4 hover:shadow-card-hover transition-all cursor-pointer">
-              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center shrink-0">
-                {doc.type === "PDF" ? <FileText className="w-5 h-5 text-destructive" /> : <File className="w-5 h-5 text-primary" />}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground truncate">{doc.nom}</p>
-                <p className="text-xs text-muted-foreground">{doc.dossier} • {doc.date}</p>
-              </div>
+        {/* Breadcrumb */}
+        <div className="bg-card rounded-xl border border-border shadow-card p-3 flex items-center gap-1 flex-wrap text-sm">
+          {currentFolderId !== null && (
+            <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => {
+              const parentId = currentFolder?.parentId ?? null;
+              setCurrentFolderId(parentId);
+            }}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+          )}
+          <button onClick={() => setCurrentFolderId(null)} className="flex items-center gap-1.5 px-2 py-1 rounded hover:bg-muted text-foreground">
+            <Home className="w-3.5 h-3.5" /> Racine
+          </button>
+          {breadcrumb.map((f) => (
+            <div key={f.id} className="flex items-center gap-1">
+              <ChevronRight className="w-3.5 h-3.5 text-muted-foreground" />
+              <button onClick={() => setCurrentFolderId(f.id)} className="px-2 py-1 rounded hover:bg-muted text-foreground font-medium">
+                {f.nom}
+              </button>
             </div>
           ))}
-          {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Aucun document trouvé</p>}
+        </div>
+
+        {/* Content */}
+        <div className="bg-card rounded-xl border border-border shadow-card p-4">
+          {filtered.folders.length === 0 && filtered.files.length === 0 ? (
+            <p className="text-center text-muted-foreground py-12 text-sm">Ce dossier est vide</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filtered.folders.map((f) => (
+                <button key={`folder-${f.id}`} onClick={() => { setCurrentFolderId(f.id); setSearch(""); }}
+                  className="group flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border"
+                >
+                  <Folder className="w-12 h-12 text-primary group-hover:scale-110 transition-transform" fill="currentColor" fillOpacity={0.1} />
+                  <span className="text-xs font-medium text-foreground text-center truncate w-full">{f.nom}</span>
+                </button>
+              ))}
+              {filtered.files.map((d) => (
+                <div key={`file-${d.id}`} className="group flex flex-col items-center gap-2 p-4 rounded-lg hover:bg-muted transition-colors border border-transparent hover:border-border cursor-pointer">
+                  {d.type === "PDF" ? <FileText className="w-12 h-12 text-destructive" /> : <File className="w-12 h-12 text-primary" />}
+                  <span className="text-xs font-medium text-foreground text-center truncate w-full">{d.nom}</span>
+                  <span className="text-[10px] text-muted-foreground">{d.taille}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </ModuleLayout>
