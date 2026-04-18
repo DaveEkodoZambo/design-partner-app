@@ -115,7 +115,21 @@ const GEDGestion = () => {
           </Dialog>
         </div>
 
-        <DataTable columns={columns} data={docs} onView={setDetail} onEdit={handleEdit} onDelete={handleDelete} onToggleActive={handleToggle} />
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher un document (nom, type, dossier)..."
+          exportData={filtered}
+          exportFileName="documents"
+          exportSheetName="Documents"
+          exportMapper={(d) => ({
+            Nom: d.nom, Type: d.type, Dossier: folderName(d.folderId),
+            Taille: d.taille, Date: d.date, Statut: d.actif ? "Actif" : "Inactif",
+            "Créé par": d.createdBy || "", "Modifié par": d.updatedBy || "",
+          })}
+        />
+
+        <DataTable columns={columns} data={filtered} onView={setDetail} onEdit={handleEdit} onDelete={handleDelete} onToggleActive={handleToggle} />
 
         <Dialog open={!!detail} onOpenChange={(v) => !v && setDetail(null)}>
           <DialogContent className="max-w-lg">
@@ -135,6 +149,8 @@ const GEDGestion = () => {
                   <div className="flex items-center gap-3"><Folder className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Dossier:</span><span className="text-foreground font-medium">{folderName(detail.folderId)}</span></div>
                   <div className="flex items-center gap-3"><FileText className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Taille:</span><span className="text-foreground font-medium">{detail.taille}</span></div>
                   <div className="flex items-center gap-3"><Calendar className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Date:</span><span className="text-foreground font-medium">{detail.date}</span></div>
+                  <div className="flex items-center gap-3"><UserCog className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Créé par:</span><span className="text-foreground font-medium">{detail.createdBy || "—"}</span></div>
+                  <div className="flex items-center gap-3"><UserCog className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Modifié par:</span><span className="text-foreground font-medium">{detail.updatedBy || "—"}</span></div>
                 </div>
               </div>
             )}
