@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Search, Folder, ChevronRight, FileText, File, ArrowLeft, Home } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
-import { Input } from "@/components/ui/input";
+import TableToolbar from "@/components/TableToolbar";
 import { Button } from "@/components/ui/button";
 import { useAppStore, FolderNode } from "@/lib/store";
 
