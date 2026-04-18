@@ -13,6 +13,9 @@ export interface Courrier {
   contenu?: string;
   fichier?: { nom: string; taille: string; type: string };
   assignedTo?: string;
+  assignmentComment?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface FolderNode {
