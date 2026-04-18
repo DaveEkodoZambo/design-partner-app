@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
-import { ArrowLeft, Download, Eye, UserPlus, Mail, Calendar, Tag, Hash, FileText, AlertCircle, User } from "lucide-react";
+import { ArrowLeft, Download, Eye, UserPlus, Mail, Calendar, Tag, Hash, FileText, AlertCircle, User, MessageSquare, UserCog } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store";
 import { usePageTransition } from "@/hooks/usePageTransition";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -20,6 +21,7 @@ const CourrierDetail = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignee, setAssignee] = useState(courrier?.assignedTo || "");
+  const [comment, setComment] = useState(courrier?.assignmentComment || "");
 
   if (!courrier) {
     return (
@@ -38,7 +40,7 @@ const CourrierDetail = () => {
 
   const handleAssign = () => {
     if (assignee) {
-      updateCourrier(courrier.id, { assignedTo: assignee });
+      updateCourrier(courrier.id, { assignedTo: assignee, assignmentComment: comment });
       toast.success("Courrier assigné", { description: `Assigné à ${assignee}` });
       setAssignOpen(false);
     }
