@@ -34,10 +34,17 @@ const GEDExploration = () => {
   return (
     <ModuleLayout title="Exploration" sidebarItems={sidebarItems} backPath="/ged">
       <div className="space-y-5">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Rechercher dans ce dossier..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
-        </div>
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher dans ce dossier..."
+          exportData={[
+            ...filtered.folders.map(f => ({ Type: "Dossier", Nom: f.nom, Taille: "", Date: "", "Créé par": f.createdBy || "", "Modifié par": f.updatedBy || "" })),
+            ...filtered.files.map(d => ({ Type: d.type, Nom: d.nom, Taille: d.taille, Date: d.date, "Créé par": d.createdBy || "", "Modifié par": d.updatedBy || "" })),
+          ]}
+          exportFileName={`exploration_${currentFolder?.nom?.replace(/\s+/g, "_") || "racine"}`}
+          exportSheetName="Exploration"
+        />
 
         {/* Breadcrumb */}
         <div className="bg-card rounded-xl border border-border shadow-card p-3 flex items-center gap-1 flex-wrap text-sm">
