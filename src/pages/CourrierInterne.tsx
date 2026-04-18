@@ -19,6 +19,7 @@ const CourrierInterne = () => {
       type: "reception", objet: form.objet, contact: `${form.serviceSource} → ${form.serviceDestination}`,
       priorite: form.priorite, date: new Date().toISOString().slice(0, 10), statut: "Non lu",
       assignedTo: form.serviceDestination,
+      createdBy: "Admin CUY", updatedBy: "Admin CUY",
     });
     toast.success("Courrier transmis", { description: "Le courrier interne a été transmis." });
     setForm({ objet: "", serviceSource: "", serviceDestination: "", priorite: "NORMALE" });

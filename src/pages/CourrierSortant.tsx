@@ -18,6 +18,7 @@ const CourrierSortant = () => {
     addCourrier({
       type: "envoi", objet: form.objet, contact: form.destinataire,
       priorite: form.priorite, date: new Date().toISOString().slice(0, 10), statut: "Envoyé",
+      createdBy: "Admin CUY", updatedBy: "Admin CUY",
     });
     toast.success("Courrier envoyé", { description: "Le courrier sortant a été créé." });
     setForm({ objet: "", destinataire: "", priorite: "NORMALE" });
