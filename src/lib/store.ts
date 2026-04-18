@@ -23,6 +23,8 @@ export interface FolderNode {
   nom: string;
   parentId: number | null;
   description?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
 
 export interface Document {
@@ -36,7 +38,11 @@ export interface Document {
   scelle: boolean;
   hash?: string;
   categorie?: string;
+  createdBy?: string;
+  updatedBy?: string;
 }
+
+export const CURRENT_USER = "Admin CUY";
 
 interface AppState {
   courriers: Courrier[];
@@ -57,14 +63,14 @@ interface AppState {
 
 export const useAppStore = create<AppState>((set) => ({
   courriers: [
-    { id: 1, type: "reception", objet: "Demande d'autorisation de construire", contact: "Ministère de l'Habitat", reference: "MH/2026/0421", priorite: "HAUTE", date: "2026-04-15", statut: "Non lu", contenu: "Demande officielle d'autorisation de construire un complexe administratif dans la zone Bastos. Veuillez examiner et fournir une réponse sous 15 jours.", fichier: { nom: "demande_autorisation.pdf", taille: "1.2 Mo", type: "PDF" } },
-    { id: 2, type: "reception", objet: "Rapport d'activité Q1 2026", contact: "Direction Technique", reference: "DT/RA/Q1", priorite: "NORMALE", date: "2026-04-14", statut: "Traité", contenu: "Rapport trimestriel détaillant les activités, budgets engagés et prochaines étapes du premier trimestre 2026.", fichier: { nom: "rapport_q1.pdf", taille: "3.4 Mo", type: "PDF" } },
-    { id: 3, type: "reception", objet: "Convocation réunion conseil municipal", contact: "Cabinet du Maire", reference: "CM/CONV/042", priorite: "HAUTE", date: "2026-04-13", statut: "Non lu", contenu: "Convocation à la réunion extraordinaire du conseil municipal prévue le 25 avril 2026 à 10h00.", fichier: { nom: "convocation.pdf", taille: "240 Ko", type: "PDF" } },
-    { id: 4, type: "envoi", objet: "Réponse autorisation construire", contact: "Ministère de l'Habitat", reference: "CUY/REP/0089", priorite: "HAUTE", date: "2026-04-15", statut: "Envoyé", contenu: "Réponse officielle à la demande d'autorisation de construire transmise par le Ministère.", fichier: { nom: "reponse_autorisation.pdf", taille: "890 Ko", type: "PDF" } },
-    { id: 5, type: "envoi", objet: "Note de service – Horaires", contact: "Tous les services", reference: "CUY/NS/2026-12", priorite: "NORMALE", date: "2026-04-12", statut: "Envoyé", contenu: "Nouvelle organisation des horaires de travail effective à compter du 1er mai 2026.", fichier: { nom: "note_horaires.docx", taille: "45 Ko", type: "DOCX" } },
+    { id: 1, type: "reception", objet: "Demande d'autorisation de construire", contact: "Ministère de l'Habitat", reference: "MH/2026/0421", priorite: "HAUTE", date: "2026-04-15", statut: "Non lu", contenu: "Demande officielle d'autorisation de construire un complexe administratif dans la zone Bastos. Veuillez examiner et fournir une réponse sous 15 jours.", fichier: { nom: "demande_autorisation.pdf", taille: "1.2 Mo", type: "PDF" }, createdBy: "Marie Mbarga", updatedBy: "Marie Mbarga" },
+    { id: 2, type: "reception", objet: "Rapport d'activité Q1 2026", contact: "Direction Technique", reference: "DT/RA/Q1", priorite: "NORMALE", date: "2026-04-14", statut: "Traité", contenu: "Rapport trimestriel détaillant les activités, budgets engagés et prochaines étapes du premier trimestre 2026.", fichier: { nom: "rapport_q1.pdf", taille: "3.4 Mo", type: "PDF" }, createdBy: "Paul Fouda", updatedBy: "Jean Nguema" },
+    { id: 3, type: "reception", objet: "Convocation réunion conseil municipal", contact: "Cabinet du Maire", reference: "CM/CONV/042", priorite: "HAUTE", date: "2026-04-13", statut: "Non lu", contenu: "Convocation à la réunion extraordinaire du conseil municipal prévue le 25 avril 2026 à 10h00.", fichier: { nom: "convocation.pdf", taille: "240 Ko", type: "PDF" }, createdBy: "Sophie Atangana", updatedBy: "Sophie Atangana" },
+    { id: 4, type: "envoi", objet: "Réponse autorisation construire", contact: "Ministère de l'Habitat", reference: "CUY/REP/0089", priorite: "HAUTE", date: "2026-04-15", statut: "Envoyé", contenu: "Réponse officielle à la demande d'autorisation de construire transmise par le Ministère.", fichier: { nom: "reponse_autorisation.pdf", taille: "890 Ko", type: "PDF" }, createdBy: "Jean Nguema", updatedBy: "Jean Nguema" },
+    { id: 5, type: "envoi", objet: "Note de service – Horaires", contact: "Tous les services", reference: "CUY/NS/2026-12", priorite: "NORMALE", date: "2026-04-12", statut: "Envoyé", contenu: "Nouvelle organisation des horaires de travail effective à compter du 1er mai 2026.", fichier: { nom: "note_horaires.docx", taille: "45 Ko", type: "DOCX" }, createdBy: "Marie Mbarga", updatedBy: "Marie Mbarga" },
   ],
   addCourrier: (c) => set((s) => ({ courriers: [{ ...c, id: Date.now() }, ...s.courriers] })),
-  updateCourrier: (id, patch) => set((s) => ({ courriers: s.courriers.map((c) => (c.id === id ? { ...c, ...patch } : c)) })),
+  updateCourrier: (id, patch) => set((s) => ({ courriers: s.courriers.map((c) => (c.id === id ? { ...c, ...patch, updatedBy: patch.updatedBy ?? CURRENT_USER } : c)) })),
 
   folders: [
     { id: 1, nom: "Courriers 2026", parentId: null, description: "Tous les courriers de l'année 2026" },
