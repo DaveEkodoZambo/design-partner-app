@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FolderTree, FolderPlus, ChevronRight, Folder, Pencil, Trash2 } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
+import TableToolbar from "@/components/TableToolbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -61,7 +62,34 @@ const GEDArborescence = () => {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<FolderNode | null>(null);
   const [form, setForm] = useState({ nom: "", parentId: "root", description: "" });
-  const rootFolders = folders.filter((f) => f.parentId === null);
+  const [search, setSearch] = useState("");
+
+  const folderPath = (id: number | null): string => {
+    if (id === null) return "Racine";
+    const f = folders.find((x) => x.id === id);
+    if (!f) return "—";
+    return `${folderPath(f.parentId)} / ${f.nom}`;
+  };
+
+  const matchedIds = useMemo(() => {
+    if (!search.trim()) return null;
+    const q = search.toLowerCase();
+    const ids = new Set<number>();
+    folders.forEach((f) => {
+      if (f.nom.toLowerCase().includes(q) || (f.description || "").toLowerCase().includes(q)) {
+        // include this folder and all its ancestors so the tree displays it
+        let cursor: FolderNode | undefined = f;
+        while (cursor) {
+          ids.add(cursor.id);
+          cursor = folders.find((x) => x.id === cursor!.parentId);
+        }
+      }
+    });
+    return ids;
+  }, [folders, search]);
+
+  const visibleFolders = matchedIds ? folders.filter((f) => matchedIds.has(f.id)) : folders;
+  const rootFolders = visibleFolders.filter((f) => f.parentId === null);
 
   const resetForm = () => { setForm({ nom: "", parentId: "root", description: "" }); setEditing(null); };
 
@@ -124,12 +152,28 @@ const GEDArborescence = () => {
           </Dialog>
         </div>
 
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher un dossier..."
+          exportData={folders}
+          exportFileName="arborescence"
+          exportSheetName="Dossiers"
+          exportMapper={(f) => ({
+            Nom: f.nom,
+            Chemin: folderPath(f.parentId),
+            Description: f.description || "",
+            "Créé par": f.createdBy || "",
+            "Modifié par": f.updatedBy || "",
+          })}
+        />
+
         <div className="bg-card rounded-xl border border-border p-3 shadow-card">
           {rootFolders.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8 text-sm">Aucun dossier — créez le premier !</p>
+            <p className="text-center text-muted-foreground py-8 text-sm">{search ? "Aucun résultat" : "Aucun dossier — créez le premier !"}</p>
           ) : (
             rootFolders.map(folder => (
-              <FolderItem key={folder.id} folder={folder} level={0} allFolders={folders} onEdit={handleEdit} onDelete={handleDelete} />
+              <FolderItem key={folder.id} folder={folder} level={0} allFolders={visibleFolders} onEdit={handleEdit} onDelete={handleDelete} />
             ))
           )}
         </div>

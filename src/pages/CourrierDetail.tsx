@@ -1,10 +1,11 @@
 import { useParams } from "react-router-dom";
-import { ArrowLeft, Download, Eye, UserPlus, Mail, Calendar, Tag, Hash, FileText, AlertCircle, User } from "lucide-react";
+import { ArrowLeft, Download, Eye, UserPlus, Mail, Calendar, Tag, Hash, FileText, AlertCircle, User, MessageSquare, UserCog } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useAppStore } from "@/lib/store";
 import { usePageTransition } from "@/hooks/usePageTransition";
 import LoadingScreen from "@/components/LoadingScreen";
@@ -20,6 +21,7 @@ const CourrierDetail = () => {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assignee, setAssignee] = useState(courrier?.assignedTo || "");
+  const [comment, setComment] = useState(courrier?.assignmentComment || "");
 
   if (!courrier) {
     return (
@@ -38,7 +40,7 @@ const CourrierDetail = () => {
 
   const handleAssign = () => {
     if (assignee) {
-      updateCourrier(courrier.id, { assignedTo: assignee });
+      updateCourrier(courrier.id, { assignedTo: assignee, assignmentComment: comment });
       toast.success("Courrier assigné", { description: `Assigné à ${assignee}` });
       setAssignOpen(false);
     }
@@ -172,6 +174,33 @@ const CourrierDetail = () => {
                       </div>
                     </div>
                   )}
+                  {courrier.assignmentComment && (
+                    <div className="flex items-start gap-3">
+                      <MessageSquare className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Commentaire d'assignation</p>
+                        <p className="text-sm text-foreground mt-0.5 leading-relaxed">{courrier.assignmentComment}</p>
+                      </div>
+                    </div>
+                  )}
+                  {courrier.createdBy && (
+                    <div className="flex items-start gap-3">
+                      <UserCog className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Créé par</p>
+                        <p className="font-medium text-foreground mt-0.5">{courrier.createdBy}</p>
+                      </div>
+                    </div>
+                  )}
+                  {courrier.updatedBy && courrier.updatedBy !== courrier.createdBy && (
+                    <div className="flex items-start gap-3">
+                      <UserCog className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Modifié par</p>
+                        <p className="font-medium text-foreground mt-0.5">{courrier.updatedBy}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -215,6 +244,12 @@ const CourrierDetail = () => {
                 <SelectItem value="Sophie Atangana">Sophie Atangana (Agent)</SelectItem>
               </SelectContent>
             </Select>
+            <Textarea
+              placeholder="Commentaire (instructions, contexte...)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+            />
             <Button onClick={handleAssign} className="w-full gradient-primary text-primary-foreground">Assigner</Button>
           </div>
         </DialogContent>

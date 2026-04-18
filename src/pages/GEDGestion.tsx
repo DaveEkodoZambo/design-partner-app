@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Settings, Plus, FileText, Calendar, Folder } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Settings, Plus, FileText, Calendar, Folder, UserCog } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import KpiCard from "@/components/KpiCard";
 import DataTable from "@/components/DataTable";
+import TableToolbar from "@/components/TableToolbar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ const GEDGestion = () => {
   const [detail, setDetail] = useState<any>(null);
   const [editId, setEditId] = useState<number | null>(null);
   const [form, setForm] = useState({ nom: "", type: "PDF", folderId: "none", taille: "" });
+  const [search, setSearch] = useState("");
 
   const resetForm = () => { setForm({ nom: "", type: "PDF", folderId: "none", taille: "" }); setEditId(null); };
 
@@ -52,6 +54,15 @@ const GEDGestion = () => {
 
   const folderName = (id: number | null) => folders.find(f => f.id === id)?.nom || "Racine";
 
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return docs.filter(d =>
+      [d.nom, d.type, folderName(d.folderId), d.createdBy, d.updatedBy]
+        .some(v => String(v ?? "").toLowerCase().includes(q))
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [docs, search, folders]);
+
   const columns = [
     { key: "nom", label: "Nom" },
     { key: "type", label: "Type", render: (v: string) => <Badge variant="outline">{v}</Badge> },
@@ -61,6 +72,7 @@ const GEDGestion = () => {
     { key: "actif", label: "Statut", render: (v: boolean) => (
       <Badge className={v ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}>{v ? "Actif" : "Inactif"}</Badge>
     )},
+    { key: "updatedBy", label: "Modifié par", render: (v: string) => <span className="text-xs text-muted-foreground">{v || "—"}</span> },
   ];
 
   return (
@@ -103,7 +115,21 @@ const GEDGestion = () => {
           </Dialog>
         </div>
 
-        <DataTable columns={columns} data={docs} onView={setDetail} onEdit={handleEdit} onDelete={handleDelete} onToggleActive={handleToggle} />
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher un document (nom, type, dossier)..."
+          exportData={filtered}
+          exportFileName="documents"
+          exportSheetName="Documents"
+          exportMapper={(d) => ({
+            Nom: d.nom, Type: d.type, Dossier: folderName(d.folderId),
+            Taille: d.taille, Date: d.date, Statut: d.actif ? "Actif" : "Inactif",
+            "Créé par": d.createdBy || "", "Modifié par": d.updatedBy || "",
+          })}
+        />
+
+        <DataTable columns={columns} data={filtered} onView={setDetail} onEdit={handleEdit} onDelete={handleDelete} onToggleActive={handleToggle} />
 
         <Dialog open={!!detail} onOpenChange={(v) => !v && setDetail(null)}>
           <DialogContent className="max-w-lg">
@@ -123,6 +149,8 @@ const GEDGestion = () => {
                   <div className="flex items-center gap-3"><Folder className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Dossier:</span><span className="text-foreground font-medium">{folderName(detail.folderId)}</span></div>
                   <div className="flex items-center gap-3"><FileText className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Taille:</span><span className="text-foreground font-medium">{detail.taille}</span></div>
                   <div className="flex items-center gap-3"><Calendar className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Date:</span><span className="text-foreground font-medium">{detail.date}</span></div>
+                  <div className="flex items-center gap-3"><UserCog className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Créé par:</span><span className="text-foreground font-medium">{detail.createdBy || "—"}</span></div>
+                  <div className="flex items-center gap-3"><UserCog className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Modifié par:</span><span className="text-foreground font-medium">{detail.updatedBy || "—"}</span></div>
                 </div>
               </div>
             )}

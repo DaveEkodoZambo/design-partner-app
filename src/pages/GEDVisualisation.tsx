@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { Eye, FileText, File, Lock, Search, Download } from "lucide-react";
+import { Eye, FileText, File, Lock, Download } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
-import { Input } from "@/components/ui/input";
+import TableToolbar from "@/components/TableToolbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -31,10 +31,18 @@ const GEDVisualisation = () => {
   return (
     <ModuleLayout title="Visualisation" sidebarItems={sidebarItems} backPath="/ged">
       <div className="space-y-5">
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Rechercher un document..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
-        </div>
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher un document..."
+          exportData={filtered}
+          exportFileName="documents_visualisation"
+          exportSheetName="Documents"
+          exportMapper={(d) => ({
+            Nom: d.nom, Type: d.type, Taille: d.taille, Date: d.date,
+            "Créé par": d.createdBy || "", "Modifié par": d.updatedBy || "",
+          })}
+        />
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filtered.map((d) => (

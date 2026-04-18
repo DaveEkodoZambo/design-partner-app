@@ -19,6 +19,7 @@ const CourrierEntrant = () => {
       type: "reception", objet: form.objet, contact: form.expediteur, reference: form.reference,
       priorite: form.priorite, date: new Date().toISOString().slice(0, 10), statut: "Non lu",
       assignedTo: form.destinataire,
+      createdBy: "Admin CUY", updatedBy: "Admin CUY",
     });
     toast.success("Courrier enregistré", { description: "Le courrier entrant a été enregistré." });
     setForm({ objet: "", expediteur: "", reference: "", priorite: "NORMALE", destinataire: "" });

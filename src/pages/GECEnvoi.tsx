@@ -2,12 +2,14 @@ import { Send, Mail, UserPlus } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import KpiCard from "@/components/KpiCard";
 import DataTable from "@/components/DataTable";
+import TableToolbar from "@/components/TableToolbar";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
 import { usePageTransition } from "@/hooks/usePageTransition";
 import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
@@ -18,15 +20,27 @@ const GECEnvoi = () => {
   const courriers = useMemo(() => allCourriers.filter((c) => c.type === "envoi"), [allCourriers]);
   const updateCourrier = useAppStore((s) => s.updateCourrier);
   const { navigateTo } = usePageTransition();
+  const [search, setSearch] = useState("");
   const [assignTarget, setAssignTarget] = useState<any>(null);
   const [assignee, setAssignee] = useState("");
+  const [comment, setComment] = useState("");
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return courriers.filter((c) =>
+      [c.objet, c.contact, c.statut, c.priorite, c.reference, c.updatedBy, c.createdBy]
+        .filter(Boolean)
+        .some((v) => String(v).toLowerCase().includes(q))
+    );
+  }, [courriers, search]);
 
   const handleAssign = () => {
     if (assignTarget && assignee) {
-      updateCourrier(assignTarget.id, { assignedTo: assignee });
+      updateCourrier(assignTarget.id, { assignedTo: assignee, assignmentComment: comment });
       toast.success("Courrier assigné", { description: `Assigné à ${assignee}` });
       setAssignTarget(null);
       setAssignee("");
+      setComment("");
     }
   };
 
@@ -36,6 +50,27 @@ const GECEnvoi = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <KpiCard title="Total envoyés" value={courriers.length} icon={Mail} />
         </div>
+
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher un courrier (objet, destinataire, statut)..."
+          exportData={filtered}
+          exportFileName="boite_envoi"
+          exportSheetName="Envoi"
+          exportMapper={(c) => ({
+            Objet: c.objet,
+            Destinataire: c.contact,
+            Référence: c.reference || "",
+            Date: c.date,
+            Priorité: c.priorite,
+            Statut: c.statut,
+            "Assigné à": c.assignedTo || "",
+            "Créé par": c.createdBy || "",
+            "Modifié par": c.updatedBy || "",
+          })}
+        />
+
         <DataTable
           actionsAsMenu
           columns={[
@@ -48,8 +83,11 @@ const GECEnvoi = () => {
             { key: "statut", label: "Statut", render: (v: string) => (
               <Badge className="bg-primary text-primary-foreground">{v}</Badge>
             )},
+            { key: "updatedBy", label: "Modifié par", render: (v: string) => (
+              <span className="text-xs text-muted-foreground">{v || "—"}</span>
+            )},
           ]}
-          data={courriers}
+          data={filtered}
           onRowClick={(row) => navigateTo(`/gec/courrier/${row.id}`)}
           onView={(row) => navigateTo(`/gec/courrier/${row.id}`)}
           extraActions={[
@@ -57,7 +95,7 @@ const GECEnvoi = () => {
           ]}
         />
 
-        <Dialog open={!!assignTarget} onOpenChange={(v) => !v && setAssignTarget(null)}>
+        <Dialog open={!!assignTarget} onOpenChange={(v) => { if (!v) { setAssignTarget(null); setAssignee(""); setComment(""); } }}>
           <DialogContent>
             <DialogHeader><DialogTitle>Assigner le courrier</DialogTitle></DialogHeader>
             <div className="space-y-3 pt-2">
@@ -71,6 +109,12 @@ const GECEnvoi = () => {
                   <SelectItem value="Sophie Atangana">Sophie Atangana</SelectItem>
                 </SelectContent>
               </Select>
+              <Textarea
+                placeholder="Commentaire (instructions, contexte...)"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                rows={4}
+              />
               <Button onClick={handleAssign} className="w-full gradient-primary text-primary-foreground">Assigner</Button>
             </div>
           </DialogContent>
