@@ -174,6 +174,33 @@ const CourrierDetail = () => {
                       </div>
                     </div>
                   )}
+                  {courrier.assignmentComment && (
+                    <div className="flex items-start gap-3">
+                      <MessageSquare className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Commentaire d'assignation</p>
+                        <p className="text-sm text-foreground mt-0.5 leading-relaxed">{courrier.assignmentComment}</p>
+                      </div>
+                    </div>
+                  )}
+                  {courrier.createdBy && (
+                    <div className="flex items-start gap-3">
+                      <UserCog className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Créé par</p>
+                        <p className="font-medium text-foreground mt-0.5">{courrier.createdBy}</p>
+                      </div>
+                    </div>
+                  )}
+                  {courrier.updatedBy && courrier.updatedBy !== courrier.createdBy && (
+                    <div className="flex items-start gap-3">
+                      <UserCog className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
+                      <div>
+                        <p className="text-xs text-muted-foreground">Modifié par</p>
+                        <p className="font-medium text-foreground mt-0.5">{courrier.updatedBy}</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -217,6 +244,12 @@ const CourrierDetail = () => {
                 <SelectItem value="Sophie Atangana">Sophie Atangana (Agent)</SelectItem>
               </SelectContent>
             </Select>
+            <Textarea
+              placeholder="Commentaire (instructions, contexte...)"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              rows={4}
+            />
             <Button onClick={handleAssign} className="w-full gradient-primary text-primary-foreground">Assigner</Button>
           </div>
         </DialogContent>
