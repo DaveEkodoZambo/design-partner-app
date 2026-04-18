@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Archive, Search, FileText, File, Lock, Eye, Download, Calendar, Hash, Tag } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import KpiCard from "@/components/KpiCard";
@@ -13,7 +13,8 @@ import { toast } from "sonner";
 const sidebarItems = [{ id: "archives", label: "Archives", icon: Archive, path: "/sae" }];
 
 const SAE = () => {
-  const archives = useAppStore((s) => s.documents.filter((d) => d.scelle));
+  const allDocuments = useAppStore((s) => s.documents);
+  const archives = useMemo(() => allDocuments.filter((d) => d.scelle), [allDocuments]);
   const [search, setSearch] = useState("");
   const [detail, setDetail] = useState<any>(null);
 
