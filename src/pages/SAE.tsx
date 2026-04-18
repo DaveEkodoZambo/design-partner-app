@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { Archive, Search, FileText, File, Lock, Eye, Download, Calendar, Hash, Tag } from "lucide-react";
+import { Archive, FileText, File, Lock, Eye, Download, Calendar, Hash, Tag } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import KpiCard from "@/components/KpiCard";
 import DataTable from "@/components/DataTable";
-import { Input } from "@/components/ui/input";
+import TableToolbar from "@/components/TableToolbar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -41,10 +41,19 @@ const SAE = () => {
           <KpiCard title="Documents scellés" value={totalSize} icon={Lock} color="bg-success" />
         </div>
 
-        <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Rechercher (nom, catégorie, empreinte)..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
-        </div>
+        <TableToolbar
+          search={search}
+          onSearchChange={setSearch}
+          placeholder="Rechercher (nom, catégorie, empreinte)..."
+          exportData={filtered}
+          exportFileName="archives_sae"
+          exportSheetName="Archives"
+          exportMapper={(a) => ({
+            Document: a.nom, Catégorie: a.categorie || "", Type: a.type, Taille: a.taille,
+            "Date d'archivage": a.date, Empreinte: a.hash || "", Statut: "Scellé",
+            "Créé par": a.createdBy || "", "Modifié par": a.updatedBy || "",
+          })}
+        />
 
         <DataTable
           actionsAsMenu
