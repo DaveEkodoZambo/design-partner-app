@@ -5,7 +5,7 @@ import DataTable from "@/components/DataTable";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/lib/store";
 import { usePageTransition } from "@/hooks/usePageTransition";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -14,7 +14,8 @@ import { toast } from "sonner";
 const sidebarItems = [{ id: "envoi", label: "Boîte d'envoi", icon: Send, path: "/gec/envoi" }];
 
 const GECEnvoi = () => {
-  const courriers = useAppStore((s) => s.courriers.filter((c) => c.type === "envoi"));
+  const allCourriers = useAppStore((s) => s.courriers);
+  const courriers = useMemo(() => allCourriers.filter((c) => c.type === "envoi"), [allCourriers]);
   const updateCourrier = useAppStore((s) => s.updateCourrier);
   const { navigateTo } = usePageTransition();
   const [assignTarget, setAssignTarget] = useState<any>(null);
