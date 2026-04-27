@@ -1,7 +1,7 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Settings, Plus, FileText, Calendar, Folder, UserCog, UserPlus, History,
-  Download, Eye, Sparkles, ChevronRight, Clock, MessageSquare, Bell, FileCheck2,
+  Settings, Plus, FileText, Folder, UserPlus, History, Sparkles, Bell,
 } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import KpiCard from "@/components/KpiCard";
@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useAppStore, type Document } from "@/lib/store";
 import { toast } from "sonner";
+import { usePageTransition } from "@/hooks/usePageTransition";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const sidebarItems = [{ id: "gestion", label: "Gestion documentaire", icon: Settings, path: "/ged/gestion" }];
 
@@ -29,7 +31,8 @@ const formatDateTime = (iso: string) => {
 };
 
 const GEDGestion = () => {
-  const { documents, folders, addDocument, updateDocument, deleteDocument, assignDocument, acknowledgeNewVersion } = useAppStore();
+  const { documents, folders, addDocument, updateDocument, deleteDocument, assignDocument } = useAppStore();
+  const { loading, navigateTo } = usePageTransition();
 
   const docs = useMemo(() => documents.filter((d) => !d.scelle), [documents]);
 
@@ -38,26 +41,9 @@ const GEDGestion = () => {
   const [form, setForm] = useState({ nom: "", type: "PDF", folderId: "none", taille: "" });
   const [search, setSearch] = useState("");
 
-  // Détails (avec versions)
-  const [detailId, setDetailId] = useState<number | null>(null);
-  const [previewVersion, setPreviewVersion] = useState<number | null>(null);
-
   // Assignation
   const [assignDoc, setAssignDoc] = useState<Document | null>(null);
   const [assignForm, setAssignForm] = useState({ user: "", comment: "", fileName: "" });
-
-  const detailDoc = useMemo(() => docs.find(d => d.id === detailId) || null, [docs, detailId]);
-
-  // Quand on ouvre le détail, on acquitte automatiquement le badge "nouvelle version"
-  useEffect(() => {
-    if (detailDoc?.hasNewVersion) acknowledgeNewVersion(detailDoc.id);
-    if (detailDoc) {
-      const last = detailDoc.versions?.[detailDoc.versions.length - 1];
-      setPreviewVersion(last?.version ?? null);
-    } else {
-      setPreviewVersion(null);
-    }
-  }, [detailDoc, acknowledgeNewVersion]);
 
   const resetForm = () => { setForm({ nom: "", type: "PDF", folderId: "none", taille: "" }); setEditId(null); };
 
@@ -139,9 +125,9 @@ const GEDGestion = () => {
     { key: "updatedBy", label: "Dernier intervenant", render: (v: string) => <span className="text-xs text-muted-foreground">{v || "—"}</span> },
   ];
 
-  const previewEntry = detailDoc?.versions?.find(v => v.version === previewVersion) || null;
-
   return (
+    <>
+    <LoadingScreen show={loading} />
     <ModuleLayout title="Gestion documentaire" sidebarItems={sidebarItems} backPath="/ged">
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -200,7 +186,7 @@ const GEDGestion = () => {
           columns={columns}
           data={filtered}
           actionsAsMenu
-          onView={(row) => setDetailId(row.id)}
+          onView={(row) => navigateTo(`/ged/gestion/document/${row.id}`)}
           extraActions={[
             { label: "Assigner à un utilisateur", icon: UserPlus, onClick: (row) => openAssign(row) },
           ]}
@@ -263,158 +249,9 @@ const GEDGestion = () => {
           </DialogContent>
         </Dialog>
 
-        {/* ===================== Modal Détails (avec timeline versions) ===================== */}
-        <Dialog open={!!detailDoc} onOpenChange={(v) => !v && setDetailId(null)}>
-          <DialogContent className="max-w-5xl p-0 overflow-hidden">
-            {detailDoc && (
-              <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] max-h-[85vh]">
-                {/* ======== Colonne gauche : infos + aperçu ======== */}
-                <div className="p-6 overflow-y-auto space-y-5 border-r border-border">
-                  <DialogHeader className="text-left">
-                    <DialogTitle className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-lg bg-destructive flex items-center justify-center">
-                        <FileText className="w-6 h-6 text-destructive-foreground" />
-                      </div>
-                      <div>
-                        <p className="text-base font-bold">{detailDoc.nom}</p>
-                        <p className="text-xs font-normal text-muted-foreground">Suivi complet du document</p>
-                      </div>
-                    </DialogTitle>
-                  </DialogHeader>
-
-                  {/* KPIs versions */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-border bg-muted/40 p-3">
-                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                        <History className="w-3.5 h-3.5" /> Total versions
-                      </div>
-                      <p className="text-2xl font-bold text-foreground mt-1">{detailDoc.versions?.length ?? 0}</p>
-                    </div>
-                    <div className="rounded-lg border border-border bg-muted/40 p-3">
-                      <div className="flex items-center gap-2 text-muted-foreground text-xs">
-                        <FileCheck2 className="w-3.5 h-3.5" /> Statut courant
-                      </div>
-                      <p className="text-sm font-bold text-foreground mt-1.5">
-                        {detailDoc.versions?.[detailDoc.versions.length - 1]?.status ?? "—"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Métadonnées */}
-                  <div className="grid grid-cols-2 gap-2 text-sm">
-                    <div className="flex items-center gap-2"><Folder className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Dossier:</span><span className="font-medium">{folderName(detailDoc.folderId)}</span></div>
-                    <div className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Type:</span><span className="font-medium">{detailDoc.type}</span></div>
-                    <div className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Taille:</span><span className="font-medium">{detailDoc.taille}</span></div>
-                    <div className="flex items-center gap-2"><Calendar className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Créé le:</span><span className="font-medium">{detailDoc.date}</span></div>
-                    <div className="flex items-center gap-2"><UserCog className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Expéditeur:</span><span className="font-medium">{detailDoc.createdBy || "—"}</span></div>
-                    <div className="flex items-center gap-2"><UserCog className="w-4 h-4 text-muted-foreground" /><span className="text-muted-foreground">Dernière action:</span><span className="font-medium">{detailDoc.updatedBy || "—"}</span></div>
-                  </div>
-
-                  {/* Aperçu */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                        <Eye className="w-4 h-4 text-primary" /> Aperçu
-                        {previewEntry && (
-                          <Badge variant="outline" className="text-[10px] ml-1">
-                            v{previewEntry.version}
-                          </Badge>
-                        )}
-                      </h4>
-                      <Button variant="outline" size="sm" className="gap-2" onClick={() => toast.success("Téléchargement démarré", { description: previewEntry?.fileName || detailDoc.nom })}>
-                        <Download className="w-3.5 h-3.5" /> Télécharger
-                      </Button>
-                    </div>
-                    <div className="aspect-[4/3] rounded-lg border-2 border-dashed border-border bg-gradient-to-br from-muted/30 to-muted/60 flex flex-col items-center justify-center text-muted-foreground gap-2">
-                      <FileText className="w-12 h-12 opacity-50" />
-                      <p className="text-xs font-medium">{previewEntry?.fileName || detailDoc.nom}</p>
-                      <p className="text-[10px]">Aperçu du document</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <Button onClick={() => { setAssignDoc(detailDoc); setAssignForm({ user: "", comment: "", fileName: detailDoc.nom }); }} className="flex-1 gradient-primary text-primary-foreground gap-2">
-                      <UserPlus className="w-4 h-4" /> Assigner à un utilisateur
-                    </Button>
-                  </div>
-                </div>
-
-                {/* ======== Colonne droite : timeline versions ======== */}
-                <div className="bg-muted/30 flex flex-col">
-                  <div className="px-5 py-4 border-b border-border bg-card/50">
-                    <h4 className="text-sm font-bold text-foreground flex items-center gap-2">
-                      <History className="w-4 h-4 text-primary" /> Historique des versions
-                    </h4>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {detailDoc.versions?.length ?? 0} version(s) · cliquez pour prévisualiser
-                    </p>
-                  </div>
-
-                  <div className="flex-1 overflow-y-auto px-5 py-4">
-                    <div className="relative pl-6">
-                      {/* Ligne verticale */}
-                      <div className="absolute left-2 top-1 bottom-1 w-px bg-border" />
-
-                      {(detailDoc.versions ?? []).slice().reverse().map((v) => {
-                        const isActive = v.version === previewVersion;
-                        const isLatest = v.version === (detailDoc.versions?.length ?? 0);
-                        return (
-                          <button
-                            key={v.version}
-                            onClick={() => setPreviewVersion(v.version)}
-                            className={`relative w-full text-left mb-3 rounded-lg border p-3 transition-all ${
-                              isActive
-                                ? "border-primary bg-primary/5 shadow-sm"
-                                : "border-border bg-card hover:border-primary/40 hover:bg-card"
-                            }`}
-                          >
-                            {/* Pastille */}
-                            <span className={`absolute -left-[18px] top-3.5 w-3 h-3 rounded-full ring-4 ring-muted/30 ${isActive ? "bg-primary" : "bg-muted-foreground/40"}`} />
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <Badge className={isActive ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}>
-                                v{v.version}
-                              </Badge>
-                              {isLatest && (
-                                <Badge variant="outline" className="text-[9px] border-primary/30 text-primary">
-                                  Actuelle
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
-                              <UserCog className="w-3 h-3" /> {v.assignedTo}
-                            </div>
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
-                              <Clock className="w-3 h-3" /> {formatDateTime(v.date)}
-                            </div>
-                            <div className="text-[10px] text-muted-foreground mt-0.5">
-                              Assigné par <span className="font-medium text-foreground">{v.assignedBy}</span>
-                            </div>
-                            {v.comment && (
-                              <div className="mt-2 flex items-start gap-1.5 text-[11px] text-foreground/80 bg-muted/50 rounded px-2 py-1.5 border-l-2 border-primary/40">
-                                <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-primary" />
-                                <span className="leading-snug">{v.comment}</span>
-                              </div>
-                            )}
-                            <div className="mt-2 flex items-center justify-between">
-                              <span className="text-[10px] text-muted-foreground truncate">{v.fileName}</span>
-                              <ChevronRight className={`w-3 h-3 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
-                            </div>
-                          </button>
-                        );
-                      })}
-
-                      {(!detailDoc.versions || detailDoc.versions.length === 0) && (
-                        <p className="text-xs text-muted-foreground text-center py-6">Aucune version enregistrée.</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
       </div>
     </ModuleLayout>
+    </>
   );
 };
 
