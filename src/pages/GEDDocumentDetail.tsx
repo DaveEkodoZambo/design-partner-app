@@ -2,18 +2,15 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   Settings, FileText, Calendar, Folder, UserCog, UserPlus, History,
-  Download, Eye, Sparkles, ChevronRight, Clock, MessageSquare, FileCheck2,
+  Download, Eye, Sparkles, Clock, MessageSquare, FileCheck2,
   Hash, ShieldCheck, ArrowUpRight,
 } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAppStore } from "@/lib/store";
 import { toast } from "sonner";
+import AssignDialog from "@/components/AssignDialog";
 
 const sidebarItems = [{ id: "gestion", label: "Gestion documentaire", icon: Settings, path: "/ged/gestion" }];
 
@@ -201,46 +198,60 @@ const GEDDocumentDetail = () => {
                   const isActive = v.version === previewVersion;
                   const isLatest = v.version === (versions.length);
                   return (
-                    <button
+                    <div
                       key={v.version}
-                      onClick={() => setPreviewVersion(v.version)}
-                      className={`relative w-full text-left mb-3 rounded-xl border p-3.5 transition-all ${
+                      className={`relative mb-3 rounded-xl border p-3.5 transition-all ${
                         isActive
                           ? "border-primary bg-primary/5 shadow-md"
                           : "border-border bg-card hover:border-primary/40 hover:shadow-sm"
                       }`}
                     >
                       <span className={`absolute -left-[18px] top-4 w-3.5 h-3.5 rounded-full ring-4 ring-card ${isActive ? "bg-primary" : "bg-muted-foreground/40"}`} />
-                      <div className="flex items-center justify-between gap-2 mb-2">
-                        <Badge className={isActive ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}>
-                          v{v.version}
-                        </Badge>
-                        {isLatest && (
-                          <Badge variant="outline" className="text-[9px] border-primary/40 text-primary gap-1">
-                            <Sparkles className="w-2.5 h-2.5" /> Actuelle
+                      <button
+                        onClick={() => setPreviewVersion(v.version)}
+                        className="w-full text-left"
+                      >
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <Badge className={isActive ? "bg-primary text-primary-foreground" : "bg-muted text-foreground"}>
+                            v{v.version}
                           </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
-                        <UserCog className="w-3.5 h-3.5 text-primary" /> {v.assignedTo}
-                      </div>
-                      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
-                        <Clock className="w-3 h-3" /> {formatDateTime(v.date)}
-                      </div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">
-                        Assigné par <span className="font-medium text-foreground">{v.assignedBy}</span>
-                      </div>
-                      {v.comment && (
-                        <div className="mt-2 flex items-start gap-1.5 text-[11px] text-foreground/80 bg-muted/50 rounded px-2 py-1.5 border-l-2 border-primary/40">
-                          <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-primary" />
-                          <span className="leading-snug">{v.comment}</span>
+                          {isLatest && (
+                            <Badge variant="outline" className="text-[9px] border-primary/40 text-primary gap-1">
+                              <Sparkles className="w-2.5 h-2.5" /> Actuelle
+                            </Badge>
+                          )}
                         </div>
-                      )}
-                      <div className="mt-2 flex items-center justify-between">
-                        <span className="text-[10px] text-muted-foreground truncate">{v.fileName}</span>
-                        <ChevronRight className={`w-3.5 h-3.5 ${isActive ? "text-primary" : "text-muted-foreground"}`} />
+                        <div className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                          <UserCog className="w-3.5 h-3.5 text-primary" /> {v.assignedTo}
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-1">
+                          <Clock className="w-3 h-3" /> {formatDateTime(v.date)}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          Assigné par <span className="font-medium text-foreground">{v.assignedBy}</span>
+                        </div>
+                        {v.comment && (
+                          <div className="mt-2 flex items-start gap-1.5 text-[11px] text-foreground/80 bg-muted/50 rounded px-2 py-1.5 border-l-2 border-primary/40">
+                            <MessageSquare className="w-3 h-3 mt-0.5 shrink-0 text-primary" />
+                            <span className="leading-snug">{v.comment}</span>
+                          </div>
+                        )}
+                      </button>
+                      <div className="mt-2 pt-2 border-t border-border/60 flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-muted-foreground truncate flex-1">{v.fileName}</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 gap-1 text-[10px] shrink-0 hover:bg-primary hover:text-primary-foreground hover:border-primary"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast.success("Téléchargement démarré", { description: `${v.fileName} (v${v.version})` });
+                          }}
+                        >
+                          <Download className="w-3 h-3" /> Télécharger
+                        </Button>
                       </div>
-                    </button>
+                    </div>
                   );
                 })}
 
@@ -260,46 +271,13 @@ const GEDDocumentDetail = () => {
       </div>
 
       {/* ===== Modal Assignation ===== */}
-      <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <UserPlus className="w-5 h-5 text-primary" /> Assigner le document
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 pt-2">
-            <div className="rounded-lg bg-muted/60 border border-border p-3 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md gradient-primary flex items-center justify-center">
-                <FileText className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold truncate">{detailDoc.nom}</p>
-                <p className="text-xs text-muted-foreground">Version actuelle : v{versions.length || 1}</p>
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Utilisateur</label>
-              <Select value={assignForm.user} onValueChange={v => setAssignForm({ ...assignForm, user: v })}>
-                <SelectTrigger><SelectValue placeholder="Sélectionnez un utilisateur" /></SelectTrigger>
-                <SelectContent>
-                  {USERS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Commentaire</label>
-              <Textarea placeholder="Précisez le motif de l'assignation..." value={assignForm.comment} onChange={e => setAssignForm({ ...assignForm, comment: e.target.value })} />
-            </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold">Document <span className="text-muted-foreground font-normal">(optionnel)</span></label>
-              <Input value={assignForm.fileName} onChange={e => setAssignForm({ ...assignForm, fileName: e.target.value })} />
-            </div>
-            <Button onClick={submitAssign} className="w-full gradient-primary text-primary-foreground gap-2">
-              <UserPlus className="w-4 h-4" /> Assigner et créer une version
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <AssignDialog
+        doc={assignOpen ? detailDoc : null}
+        onClose={() => setAssignOpen(false)}
+        form={assignForm}
+        setForm={setAssignForm}
+        onSubmit={submitAssign}
+      />
     </ModuleLayout>
   );
 };

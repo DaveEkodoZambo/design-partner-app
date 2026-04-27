@@ -17,6 +17,7 @@ import { useAppStore, type Document } from "@/lib/store";
 import { toast } from "sonner";
 import { usePageTransition } from "@/hooks/usePageTransition";
 import LoadingScreen from "@/components/LoadingScreen";
+import AssignDialog from "@/components/AssignDialog";
 
 const sidebarItems = [{ id: "gestion", label: "Gestion documentaire", icon: Settings, path: "/ged/gestion" }];
 
@@ -186,6 +187,7 @@ const GEDGestion = () => {
           columns={columns}
           data={filtered}
           actionsAsMenu
+          onRowClick={(row) => navigateTo(`/ged/gestion/document/${row.id}`)}
           onView={(row) => navigateTo(`/ged/gestion/document/${row.id}`)}
           extraActions={[
             { label: "Assigner à un utilisateur", icon: UserPlus, onClick: (row) => openAssign(row) },
@@ -193,61 +195,13 @@ const GEDGestion = () => {
         />
 
         {/* ===================== Modal Assignation ===================== */}
-        <Dialog open={!!assignDoc} onOpenChange={(v) => !v && setAssignDoc(null)}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-primary" /> Assigner le document
-              </DialogTitle>
-            </DialogHeader>
-            {assignDoc && (
-              <div className="space-y-4 pt-2">
-                <div className="rounded-lg bg-muted/60 border border-border p-3 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-md bg-destructive/90 flex items-center justify-center">
-                    <FileText className="w-5 h-5 text-destructive-foreground" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold truncate">{assignDoc.nom}</p>
-                    <p className="text-xs text-muted-foreground">Version actuelle : v{assignDoc.versions?.length ?? 1}</p>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Utilisateur</label>
-                  <Select value={assignForm.user} onValueChange={v => setAssignForm({ ...assignForm, user: v })}>
-                    <SelectTrigger><SelectValue placeholder="Sélectionnez un utilisateur" /></SelectTrigger>
-                    <SelectContent>
-                      {USERS.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">Commentaire</label>
-                  <Textarea
-                    placeholder="Précisez le motif de l'assignation..."
-                    value={assignForm.comment}
-                    onChange={e => setAssignForm({ ...assignForm, comment: e.target.value })}
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-foreground">
-                    Document <span className="text-muted-foreground font-normal">(optionnel — par défaut le document actuel)</span>
-                  </label>
-                  <Input
-                    value={assignForm.fileName}
-                    onChange={e => setAssignForm({ ...assignForm, fileName: e.target.value })}
-                  />
-                </div>
-
-                <Button onClick={submitAssign} className="w-full gradient-primary text-primary-foreground gap-2">
-                  <UserPlus className="w-4 h-4" /> Assigner et créer une version
-                </Button>
-              </div>
-            )}
-          </DialogContent>
-        </Dialog>
+        <AssignDialog
+          doc={assignDoc}
+          onClose={() => setAssignDoc(null)}
+          form={assignForm}
+          setForm={setAssignForm}
+          onSubmit={submitAssign}
+        />
 
       </div>
     </ModuleLayout>
