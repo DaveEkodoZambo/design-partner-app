@@ -166,4 +166,3 @@ export const useAppStore = create<AppState>((set) => ({
     documents: s.documents.map((d) => d.id === id ? { ...d, hasNewVersion: false } : d),
   })),
 }));
-}));
