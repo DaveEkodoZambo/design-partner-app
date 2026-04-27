@@ -125,9 +125,9 @@ const GEDGestion = () => {
     { key: "updatedBy", label: "Dernier intervenant", render: (v: string) => <span className="text-xs text-muted-foreground">{v || "—"}</span> },
   ];
 
-  const previewEntry = detailDoc?.versions?.find(v => v.version === previewVersion) || null;
-
   return (
+    <>
+    <LoadingScreen show={loading} />
     <ModuleLayout title="Gestion documentaire" sidebarItems={sidebarItems} backPath="/ged">
       <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -186,7 +186,7 @@ const GEDGestion = () => {
           columns={columns}
           data={filtered}
           actionsAsMenu
-          onView={(row) => setDetailId(row.id)}
+          onView={(row) => navigateTo(`/ged/gestion/document/${row.id}`)}
           extraActions={[
             { label: "Assigner à un utilisateur", icon: UserPlus, onClick: (row) => openAssign(row) },
           ]}
