@@ -20,6 +20,7 @@ import GED from "./pages/GED";
 import GEDArborescence from "./pages/GEDArborescence";
 import GEDExploration from "./pages/GEDExploration";
 import GEDGestion from "./pages/GEDGestion";
+import GEDDocumentDetail from "./pages/GEDDocumentDetail";
 import GEDVisualisation from "./pages/GEDVisualisation";
 import SAE from "./pages/SAE";
 import NotFound from "./pages/NotFound";
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/ged/arborescence" element={<GEDArborescence />} />
           <Route path="/ged/exploration" element={<GEDExploration />} />
           <Route path="/ged/gestion" element={<GEDGestion />} />
+          <Route path="/ged/gestion/document/:id" element={<GEDDocumentDetail />} />
           <Route path="/ged/visualisation" element={<GEDVisualisation />} />
           <Route path="/sae" element={<SAE />} />
           <Route path="*" element={<NotFound />} />
