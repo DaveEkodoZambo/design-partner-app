@@ -27,6 +27,16 @@ export interface FolderNode {
   updatedBy?: string;
 }
 
+export interface DocumentVersion {
+  version: number;
+  assignedTo: string;
+  assignedBy: string;
+  comment?: string;
+  date: string; // ISO datetime
+  fileName?: string;
+  status?: "En cours" | "Traité";
+}
+
 export interface Document {
   id: number;
   nom: string;
@@ -40,6 +50,8 @@ export interface Document {
   categorie?: string;
   createdBy?: string;
   updatedBy?: string;
+  versions?: DocumentVersion[];
+  hasNewVersion?: boolean;
 }
 
 export const CURRENT_USER = "Admin CUY";
@@ -59,6 +71,8 @@ interface AppState {
   updateDocument: (id: number, patch: Partial<Document>) => void;
   deleteDocument: (id: number) => void;
   sealDocument: (id: number) => void;
+  assignDocument: (id: number, assignedTo: string, comment: string, fileName?: string) => void;
+  acknowledgeNewVersion: (id: number) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
