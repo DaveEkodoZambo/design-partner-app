@@ -1,7 +1,7 @@
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Settings, Plus, FileText, Calendar, Folder, UserCog, UserPlus, History,
-  Download, Eye, Sparkles, ChevronRight, Clock, MessageSquare, Bell, FileCheck2,
+  Settings, Plus, FileText, Folder, UserPlus, History, Sparkles, Bell,
 } from "lucide-react";
 import ModuleLayout from "@/components/ModuleLayout";
 import KpiCard from "@/components/KpiCard";
@@ -15,6 +15,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useAppStore, type Document } from "@/lib/store";
 import { toast } from "sonner";
+import { usePageTransition } from "@/hooks/usePageTransition";
+import LoadingScreen from "@/components/LoadingScreen";
 
 const sidebarItems = [{ id: "gestion", label: "Gestion documentaire", icon: Settings, path: "/ged/gestion" }];
 
