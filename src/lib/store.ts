@@ -110,14 +110,31 @@ export const useAppStore = create<AppState>((set) => ({
   }),
 
   documents: [
-    { id: 1, nom: "Rapport Q1 2026.pdf", type: "PDF", folderId: 6, date: "2026-03-30", taille: "3.4 Mo", actif: true, scelle: false, createdBy: "Paul Fouda", updatedBy: "Paul Fouda" },
-    { id: 2, nom: "Note de service 042.docx", type: "DOCX", folderId: 4, date: "2026-04-10", taille: "45 Ko", actif: true, scelle: false, createdBy: "Jean Nguema", updatedBy: "Marie Mbarga" },
-    { id: 3, nom: "Courrier entrant 001.pdf", type: "PDF", folderId: 2, date: "2026-04-14", taille: "1.2 Mo", actif: true, scelle: false, createdBy: "Sophie Atangana", updatedBy: "Sophie Atangana" },
-    { id: 4, nom: "Budget prévisionnel.xlsx", type: "XLSX", folderId: 5, date: "2026-02-15", taille: "210 Ko", actif: true, scelle: false, createdBy: "Paul Fouda", updatedBy: "Paul Fouda" },
+    { id: 1, nom: "Rapport Q1 2026.pdf", type: "PDF", folderId: 6, date: "2026-03-30", taille: "3.4 Mo", actif: true, scelle: false, createdBy: "Paul Fouda", updatedBy: "Marie Mbarga", hasNewVersion: true,
+      versions: [
+        { version: 1, assignedTo: "Paul Fouda", assignedBy: "Admin CUY", comment: "Création initiale du rapport.", date: "2026-03-30T09:15:00", fileName: "Rapport_Q1_2026_v1.pdf", status: "Traité" },
+        { version: 2, assignedTo: "Jean Nguema", assignedBy: "Paul Fouda", comment: "Merci de relire la section finances.", date: "2026-04-02T14:22:00", fileName: "Rapport_Q1_2026_v2.pdf", status: "Traité" },
+        { version: 3, assignedTo: "Marie Mbarga", assignedBy: "Jean Nguema", comment: "Validation finale avant diffusion.", date: "2026-04-05T10:48:00", fileName: "Rapport_Q1_2026_v3.pdf", status: "En cours" },
+      ] },
+    { id: 2, nom: "Note de service 042.docx", type: "DOCX", folderId: 4, date: "2026-04-10", taille: "45 Ko", actif: true, scelle: false, createdBy: "Jean Nguema", updatedBy: "Marie Mbarga",
+      versions: [
+        { version: 1, assignedTo: "Jean Nguema", assignedBy: "Admin CUY", comment: "Rédaction de la note.", date: "2026-04-10T08:30:00", fileName: "Note_042_v1.docx", status: "Traité" },
+        { version: 2, assignedTo: "Marie Mbarga", assignedBy: "Jean Nguema", comment: "Validation et diffusion.", date: "2026-04-11T11:00:00", fileName: "Note_042_v2.docx", status: "En cours" },
+      ] },
+    { id: 3, nom: "Courrier entrant 001.pdf", type: "PDF", folderId: 2, date: "2026-04-14", taille: "1.2 Mo", actif: true, scelle: false, createdBy: "Sophie Atangana", updatedBy: "Sophie Atangana",
+      versions: [
+        { version: 1, assignedTo: "Sophie Atangana", assignedBy: "Admin CUY", comment: "Document enregistré.", date: "2026-04-14T09:00:00", fileName: "Courrier_001_v1.pdf", status: "En cours" },
+      ] },
+    { id: 4, nom: "Budget prévisionnel.xlsx", type: "XLSX", folderId: 5, date: "2026-02-15", taille: "210 Ko", actif: true, scelle: false, createdBy: "Paul Fouda", updatedBy: "Paul Fouda",
+      versions: [
+        { version: 1, assignedTo: "Paul Fouda", assignedBy: "Admin CUY", comment: "Première version du budget.", date: "2026-02-15T16:00:00", fileName: "Budget_v1.xlsx", status: "En cours" },
+      ] },
     { id: 5, nom: "Archive officielle 2024.pdf", type: "PDF", folderId: null, date: "2024-12-31", taille: "5.6 Mo", actif: true, scelle: true, hash: "a3f2b8c14d7e9f02", categorie: "Rapports financiers", createdBy: "Admin CUY", updatedBy: "Admin CUY" },
     { id: 6, nom: "Décret municipal 2023.pdf", type: "PDF", folderId: null, date: "2023-06-15", taille: "1.8 Mo", actif: true, scelle: true, hash: "d7e14f2ab9c3e801", categorie: "Décrets", createdBy: "Admin CUY", updatedBy: "Admin CUY" },
   ],
-  addDocument: (d) => set((s) => ({ documents: [...s.documents, { ...d, id: Date.now(), createdBy: d.createdBy ?? CURRENT_USER, updatedBy: d.updatedBy ?? CURRENT_USER }] })),
+  addDocument: (d) => set((s) => ({ documents: [...s.documents, { ...d, id: Date.now(), createdBy: d.createdBy ?? CURRENT_USER, updatedBy: d.updatedBy ?? CURRENT_USER,
+    versions: d.versions ?? [{ version: 1, assignedTo: d.createdBy ?? CURRENT_USER, assignedBy: CURRENT_USER, comment: "Création du document.", date: new Date().toISOString(), fileName: d.nom, status: "En cours" }],
+  }] })),
   updateDocument: (id, patch) => set((s) => ({ documents: s.documents.map((d) => (d.id === id ? { ...d, ...patch, updatedBy: patch.updatedBy ?? CURRENT_USER } : d)) })),
   deleteDocument: (id) => set((s) => ({ documents: s.documents.filter((d) => d.id !== id) })),
   sealDocument: (id) => set((s) => ({
@@ -127,4 +144,26 @@ export const useAppStore = create<AppState>((set) => ({
       categorie: d.categorie || "Documents archivés",
     } : d),
   })),
+  assignDocument: (id, assignedTo, comment, fileName) => set((s) => ({
+    documents: s.documents.map((d) => {
+      if (d.id !== id) return d;
+      const versions = d.versions ?? [];
+      const nextVersion = (versions[versions.length - 1]?.version ?? 0) + 1;
+      const newEntry: DocumentVersion = {
+        version: nextVersion,
+        assignedTo,
+        assignedBy: CURRENT_USER,
+        comment,
+        date: new Date().toISOString(),
+        fileName: fileName || d.nom,
+        status: "En cours",
+      };
+      const previous = versions.map((v, idx) => idx === versions.length - 1 ? { ...v, status: "Traité" as const } : v);
+      return { ...d, versions: [...previous, newEntry], updatedBy: CURRENT_USER, hasNewVersion: true };
+    }),
+  })),
+  acknowledgeNewVersion: (id) => set((s) => ({
+    documents: s.documents.map((d) => d.id === id ? { ...d, hasNewVersion: false } : d),
+  })),
+}));
 }));
