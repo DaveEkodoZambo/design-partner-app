@@ -31,7 +31,8 @@ const formatDateTime = (iso: string) => {
 };
 
 const GEDGestion = () => {
-  const { documents, folders, addDocument, updateDocument, deleteDocument, assignDocument, acknowledgeNewVersion } = useAppStore();
+  const { documents, folders, addDocument, updateDocument, deleteDocument, assignDocument } = useAppStore();
+  const { loading, navigateTo } = usePageTransition();
 
   const docs = useMemo(() => documents.filter((d) => !d.scelle), [documents]);
 
@@ -40,26 +41,9 @@ const GEDGestion = () => {
   const [form, setForm] = useState({ nom: "", type: "PDF", folderId: "none", taille: "" });
   const [search, setSearch] = useState("");
 
-  // Détails (avec versions)
-  const [detailId, setDetailId] = useState<number | null>(null);
-  const [previewVersion, setPreviewVersion] = useState<number | null>(null);
-
   // Assignation
   const [assignDoc, setAssignDoc] = useState<Document | null>(null);
   const [assignForm, setAssignForm] = useState({ user: "", comment: "", fileName: "" });
-
-  const detailDoc = useMemo(() => docs.find(d => d.id === detailId) || null, [docs, detailId]);
-
-  // Quand on ouvre le détail, on acquitte automatiquement le badge "nouvelle version"
-  useEffect(() => {
-    if (detailDoc?.hasNewVersion) acknowledgeNewVersion(detailDoc.id);
-    if (detailDoc) {
-      const last = detailDoc.versions?.[detailDoc.versions.length - 1];
-      setPreviewVersion(last?.version ?? null);
-    } else {
-      setPreviewVersion(null);
-    }
-  }, [detailDoc, acknowledgeNewVersion]);
 
   const resetForm = () => { setForm({ nom: "", type: "PDF", folderId: "none", taille: "" }); setEditId(null); };
 
