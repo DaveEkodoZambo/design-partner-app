@@ -17,6 +17,7 @@ import { useAppStore, type Document } from "@/lib/store";
 import { toast } from "sonner";
 import { usePageTransition } from "@/hooks/usePageTransition";
 import LoadingScreen from "@/components/LoadingScreen";
+import AssignDialog from "@/components/AssignDialog";
 
 const sidebarItems = [{ id: "gestion", label: "Gestion documentaire", icon: Settings, path: "/ged/gestion" }];
 
